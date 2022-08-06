@@ -40,50 +40,6 @@ import com.softsec.util.ChhUtil;
 
 public class Main {
 
-	private enum quick_size {
-		MB_100, GB_1, GB_100, GB_500, GB_1000,GB_2000;
-
-		int size() {
-			switch(this) {
-			case GB_1:
-				return 4000;
-			case GB_100:
-				return 400000;
-			case GB_1000:
-				return 4000000;
-			case GB_2000:
-				return 8000000;
-			case GB_500:
-				return 2000000;
-			case MB_100:
-				return 400;
-			default:
-				break;
-			
-			}
-			return 0;
-		}
-
-		public String toString() {
-			switch(this) {
-			case GB_1:
-				return "1GB";
-			case GB_100:
-				return "100GB";
-			case GB_1000:
-				return "1000GB";
-			case GB_2000:
-				return "2000GB";
-			case GB_500:
-				return "500GB";
-			case MB_100:
-				return "100MB";
-			default:
-				return "";
-			}
-		}
-	}
-
 	private static final long byte_per_nounce = 262144;
 
 	@SuppressWarnings("serial")
@@ -125,7 +81,7 @@ public class Main {
 		option_pane.add(fz_slider, new GridBagConstraints(1, 2, 1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 
 		var fz_combo_box = new JComboBox<>(quick_size.values());
-		fz_combo_box.addActionListener(e->fz_slider.setValue(((quick_size)fz_combo_box.getSelectedItem()).size()));
+		fz_combo_box.addActionListener(e -> fz_slider.setValue(((quick_size) fz_combo_box.getSelectedItem()).size()));
 		option_pane.add(fz_combo_box, new GridBagConstraints(2, 2, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 
 		var fz_label_1 = new JLabel();
@@ -167,7 +123,6 @@ public class Main {
 
 		fz_slider.addChangeListener(e -> fz_label_1.setText(ChhUtil.strAddComma(fz_slider.getValue() * byte_per_nounce + "")));
 		fz_combo_box.setSelectedIndex(0);
-
 
 		path_btn.addActionListener(e -> {
 			var file_dialog = new JFileChooser();
@@ -239,6 +194,50 @@ public class Main {
 		in.close();
 		tmp_file.setExecutable(true);
 		return tmp_file;
+	}
+
+	private enum quick_size {
+		MB_100, GB_1, GB_100, GB_500, GB_1000, GB_2000;
+
+		int size() {
+			switch (this) {
+			case GB_1:
+				return 4000;
+			case GB_100:
+				return 400000;
+			case GB_1000:
+				return 4000000;
+			case GB_2000:
+				return 8000000;
+			case GB_500:
+				return 2000000;
+			case MB_100:
+				return 400;
+			default:
+				break;
+
+			}
+			return 0;
+		}
+
+		public String toString() {
+			switch (this) {
+			case GB_1:
+				return "1GB";
+			case GB_100:
+				return "100GB";
+			case GB_1000:
+				return "1000GB";
+			case GB_2000:
+				return "2000GB";
+			case GB_500:
+				return "500GB";
+			case MB_100:
+				return "100MB";
+			default:
+				return "";
+			}
+		}
 	}
 
 }
