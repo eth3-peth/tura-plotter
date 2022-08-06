@@ -13,12 +13,12 @@ import javax.swing.JProgressBar;
 
 @SuppressWarnings("serial")
 public abstract class PlotProgressPanel extends JPanel implements PlotProgressListener {
-	private final JLabel hash_label_1 = new JLabel("1 MB/s");
-	private final JLabel hash_label_4 = new JLabel("1 min");
+	private final JLabel hash_label_1 = new JLabel("Unknown");
+	private final JLabel hash_label_4 = new JLabel("Unknown");
 	private final JProgressBar hash_progress_bar = new JProgressBar();
 
-	private final JLabel writ_label_1 = new JLabel("1 MB/s");
-	private final JLabel writ_label_4 = new JLabel("1 min");
+	private final JLabel writ_label_1 = new JLabel("Unknown");
+	private final JLabel writ_label_4 = new JLabel("Unknown");
 	private final JProgressBar writ_progress_bar = new JProgressBar();
 	private boolean done = false;
 
