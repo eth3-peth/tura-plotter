@@ -10,6 +10,10 @@ import java.awt.Taskbar;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.nio.file.Path;
+import java.util.Random;
 import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
@@ -43,14 +47,17 @@ public class Main {
 		var otd = OsThemeDetector.getDetector();
 		UIManager.setLookAndFeel(otd.isDark() ? new FlatDarkLaf() : new FlatLightLaf());
 		var app_icon = ImageIO.read(Main.class.getClassLoader().getResource("app_icon.png"));
-		Taskbar.getTaskbar().setIconImage(app_icon);
+		try {
+			Taskbar.getTaskbar().setIconImage(app_icon);
+		} catch (Exception x) {
+		}
 		var frame = new JFrame();
 		frame.setIconImage(app_icon);
 		var layout = new CardLayout();
 		frame.setLayout(layout);
 		var option_pane = new JPanel();
 		frame.add(option_pane, "option_pane");
-		var progress_pane = new JPanel();
+		var progress_pane = new PlotProgressPanel();
 		frame.add(progress_pane, "progress_pane");
 
 		option_pane.setLayout(new GridBagLayout());
@@ -138,13 +145,23 @@ public class Main {
 				JOptionPane.showMessageDialog(frame, "Path is not Writable!", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			File plotter_bin_path = null;
-			try {
-				plotter_bin_path = copy_plotter();
-			} catch (IOException x) {
-				JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+
+			Util.es.submit(() -> {
+
+				start_btn.setEnabled(false);
+				try {
+					Path plotter_bin_path = copy_plotter().toPath();
+					Util.plot(plotter_bin_path, dir.toPath(), false, new BigInteger(id), Math.abs(new Random().nextInt()), fz_slider.getValue(), progress_pane);
+					
+					
+				} catch (IOException x) {
+					JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				} finally {
+					layout.show(frame.getContentPane(), "option_pane");
+					start_btn.setEnabled(true);
+				}
+			});
 		});
 	}
 
@@ -153,14 +170,21 @@ public class Main {
 		if (SystemInfo.isWindows) {
 			suffix = ".exe";
 		}
-		File tmp_file = File.createTempFile("xxx", suffix);
+		File tmp_file = File.createTempFile("plotter-", suffix);
+		tmp_file.deleteOnExit();
 		String in_filename = "";
 		if (SystemInfo.isLinux) {
 			in_filename = "signum-plotter";
 		} else if (SystemInfo.isWebswing) {
 			in_filename = "signum-plotter.exe";
 		}
-		IOUtils.copy(Main.class.getClassLoader().getResourceAsStream("lib/" + in_filename), new FileOutputStream(tmp_file));
+		InputStream in = Main.class.getClassLoader().getResourceAsStream("lib/" + in_filename);
+		FileOutputStream out = new FileOutputStream(tmp_file);
+		IOUtils.copy(in, out);
+		out.flush();
+		out.close();
+		in.close();
+		tmp_file.setExecutable(true);
 		return tmp_file;
 	}
 
