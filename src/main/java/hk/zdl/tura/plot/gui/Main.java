@@ -7,6 +7,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Taskbar;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
@@ -14,15 +17,19 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.apache.commons.io.IOUtils;
+
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.util.SystemInfo;
 import com.jthemedetecor.OsThemeDetector;
 import com.softsec.util.ChhUtil;
 
@@ -67,7 +74,7 @@ public class Main {
 			protected void fireStateChanged() {
 				super.fireStateChanged();
 			}
-			
+
 		};
 		option_pane.add(fz_slider, new GridBagConstraints(1, 2, 1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 
@@ -97,11 +104,11 @@ public class Main {
 				SwingUtilities.updateComponentTreeUI(frame);
 			});
 		});
-		
+
 		fz_slider.addChangeListener(e -> fz_label_1.setText(ChhUtil.strAddComma(fz_slider.getValue() * byte_per_nounce + "")));
 		fz_slider.fireStateChanged();
-		
-		path_btn.addActionListener(e->{
+
+		path_btn.addActionListener(e -> {
 			var file_dialog = new JFileChooser();
 			file_dialog.setDialogType(JFileChooser.SAVE_DIALOG);
 			file_dialog.setMultiSelectionEnabled(false);
@@ -112,7 +119,49 @@ public class Main {
 				path_field.setText(file_dialog.getSelectedFile().getAbsolutePath());
 			}
 		});
+		start_btn.addActionListener(e -> {
+			var id = id_field.getText().trim().replace("+", "");
+			try {
+				Long.parseUnsignedLong(id);
+			} catch (NumberFormatException x) {
+				JOptionPane.showMessageDialog(frame, "Invalid Wallet ID!", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			var dir = new File(path_field.getText());
+			if (!dir.exists()) {
+				JOptionPane.showMessageDialog(frame, "Path not exist!", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			} else if (!dir.isDirectory()) {
+				JOptionPane.showMessageDialog(frame, "Path is not Directory!", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			} else if (!dir.canWrite()) {
+				JOptionPane.showMessageDialog(frame, "Path is not Writable!", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			File plotter_bin_path = null;
+			try {
+				plotter_bin_path = copy_plotter();
+			} catch (IOException x) {
+				JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+		});
+	}
 
+	private static File copy_plotter() throws IOException {
+		String suffix = "";
+		if (SystemInfo.isWindows) {
+			suffix = ".exe";
+		}
+		File tmp_file = File.createTempFile("xxx", suffix);
+		String in_filename = "";
+		if (SystemInfo.isLinux) {
+			in_filename = "signum-plotter";
+		} else if (SystemInfo.isWebswing) {
+			in_filename = "signum-plotter.exe";
+		}
+		IOUtils.copy(Main.class.getClassLoader().getResourceAsStream("lib/" + in_filename), new FileOutputStream(tmp_file));
+		return tmp_file;
 	}
 
 }
