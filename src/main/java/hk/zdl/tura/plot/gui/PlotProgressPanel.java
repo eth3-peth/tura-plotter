@@ -3,6 +3,7 @@ package hk.zdl.tura.plot.gui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -13,12 +14,12 @@ import javax.swing.JProgressBar;
 
 @SuppressWarnings("serial")
 public abstract class PlotProgressPanel extends JPanel implements PlotProgressListener {
-	private final JLabel hash_label_1 = new JLabel("Unknown");
-	private final JLabel hash_label_4 = new JLabel("Unknown");
+	private final JLabel hash_label_1 = new JLabel();
+	private final JLabel hash_label_4 = new JLabel();
 	private final JProgressBar hash_progress_bar = new JProgressBar();
 
-	private final JLabel writ_label_1 = new JLabel("Unknown");
-	private final JLabel writ_label_4 = new JLabel("Unknown");
+	private final JLabel writ_label_1 = new JLabel();
+	private final JLabel writ_label_4 = new JLabel();
 	private final JProgressBar writ_progress_bar = new JProgressBar();
 	private boolean done = false;
 
@@ -56,6 +57,8 @@ public abstract class PlotProgressPanel extends JPanel implements PlotProgressLi
 
 	public void setDone(boolean done) {
 		this.done = done;
+		Stream.of(hash_label_1,hash_label_4,writ_label_1,writ_label_4).forEach(o->o.setText("Unknown"));
+		Stream.of(hash_progress_bar,writ_progress_bar).forEach(o->o.setValue(0));
 	}
 
 	@Override

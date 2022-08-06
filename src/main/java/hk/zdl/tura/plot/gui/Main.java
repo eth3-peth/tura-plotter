@@ -123,6 +123,7 @@ public class Main {
 
 		fz_slider.addChangeListener(e -> fz_label_1.setText(ChhUtil.strAddComma(fz_slider.getValue() * byte_per_nounce + "")));
 		fz_combo_box.setSelectedIndex(0);
+		progress_pane.setDone(false);
 
 		path_btn.addActionListener(e -> {
 			var file_dialog = new JFileChooser();
