@@ -183,7 +183,7 @@ public class Main {
 		String in_filename = "";
 		if (SystemInfo.isLinux) {
 			in_filename = "signum-plotter";
-		} else if (SystemInfo.isWebswing) {
+		} else if (SystemInfo.isWindows) {
 			in_filename = "signum-plotter.exe";
 		}
 		InputStream in = Main.class.getClassLoader().getResourceAsStream("lib/" + in_filename);

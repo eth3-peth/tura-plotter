@@ -53,8 +53,9 @@ public class Util {
 		Process proc = new ProcessBuilder(l).start();
 		BufferedReader reader = proc.inputReader();
 		BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+		String line = null;
 		while (true) {
-			String line = reader.readLine().trim();
+			line = reader.readLine().trim();
 			if (line.isEmpty() || line.equals("[2A")) {
 				continue;
 			} else if (line.startsWith("Error: ")) {
@@ -74,6 +75,11 @@ public class Util {
 							} else if (line.isEmpty() || line.equals("[2A")) {
 								continue;
 							} else {
+								if (line.contains("鈹傗")) {
+									byte[] bArr = line.getBytes("GBK");
+									line = new String(bArr, "UTF-8");
+									line = line.replace("�?", "│");
+								}
 								queue.offer(line);
 							}
 						}
