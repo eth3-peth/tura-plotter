@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -38,6 +39,51 @@ import com.jthemedetecor.OsThemeDetector;
 import com.softsec.util.ChhUtil;
 
 public class Main {
+
+	private enum quick_size {
+		MB_100, GB_1, GB_100, GB_500, GB_1000,GB_2000;
+
+		int size() {
+			switch(this) {
+			case GB_1:
+				return 4000;
+			case GB_100:
+				return 400000;
+			case GB_1000:
+				return 4000000;
+			case GB_2000:
+				return 8000000;
+			case GB_500:
+				return 2000000;
+			case MB_100:
+				return 400;
+			default:
+				break;
+			
+			}
+			return 0;
+		}
+
+		public String toString() {
+			switch(this) {
+			case GB_1:
+				return "1GB";
+			case GB_100:
+				return "100GB";
+			case GB_1000:
+				return "1000GB";
+			case GB_2000:
+				return "2000GB";
+			case GB_500:
+				return "500GB";
+			case MB_100:
+				return "100MB";
+			default:
+				return "";
+			}
+		}
+	}
+
 	private static final long byte_per_nounce = 262144;
 
 	@SuppressWarnings("serial")
@@ -57,14 +103,13 @@ public class Main {
 		frame.setLayout(layout);
 		var option_pane = new JPanel();
 		frame.add(option_pane, "option_pane");
-		var progress_pane = new PlotProgressPanel();
-		frame.add(progress_pane, "progress_pane");
 
 		option_pane.setLayout(new GridBagLayout());
 		var id_label = new JLabel("Wallet ID");
 		option_pane.add(id_label, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-		var id_field = new JTextField(100);
+		var id_field = new JTextField("1234567890", 100);
 		option_pane.add(id_field, new GridBagConstraints(1, 0, 2, 1, 1, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
 		var path_label = new JLabel("Path");
 		option_pane.add(path_label, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 		var path_field = new JTextField(100);
@@ -72,18 +117,16 @@ public class Main {
 		path_field.setEditable(false);
 		option_pane.add(path_field, new GridBagConstraints(1, 1, 1, 1, 1, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 		var path_btn = new JButton("Select...");
-		option_pane.add(path_btn, new GridBagConstraints(2, 1, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
+
+		option_pane.add(path_btn, new GridBagConstraints(2, 1, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 		var fz_label = new JLabel("File Size");
-		option_pane.add(fz_label, new GridBagConstraints(0, 2, 1, 2, 0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-		var fz_slider = new JSlider(100, 10000000, 100) {
-
-			@Override
-			protected void fireStateChanged() {
-				super.fireStateChanged();
-			}
-
-		};
+		option_pane.add(fz_label, new GridBagConstraints(0, 2, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+		var fz_slider = new JSlider(100, 10000000, 1000);
 		option_pane.add(fz_slider, new GridBagConstraints(1, 2, 1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
+		var fz_combo_box = new JComboBox<>(quick_size.values());
+		fz_combo_box.addActionListener(e->fz_slider.setValue(((quick_size)fz_combo_box.getSelectedItem()).size()));
+		option_pane.add(fz_combo_box, new GridBagConstraints(2, 2, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 
 		var fz_label_1 = new JLabel();
 		fz_label_1.setHorizontalAlignment(JLabel.RIGHT);
@@ -96,7 +139,16 @@ public class Main {
 		option_pane.add(start_btn, new GridBagConstraints(0, 4, 3, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
 
 		layout.show(frame.getContentPane(), "option_pane");
-//		layout.show(frame.getContentPane(), "progress_pane");//TODO
+		var progress_pane = new PlotProgressPanel() {
+
+			@Override
+			public void onDone() {
+				start_btn.setEnabled(true);
+				layout.show(frame.getContentPane(), "option_pane");
+				setDone(false);
+			}
+		};
+		frame.add(progress_pane, "progress_pane");
 		var size = new Dimension(640, 480);
 		frame.setPreferredSize(size);
 		frame.setMinimumSize(size);
@@ -114,7 +166,8 @@ public class Main {
 		});
 
 		fz_slider.addChangeListener(e -> fz_label_1.setText(ChhUtil.strAddComma(fz_slider.getValue() * byte_per_nounce + "")));
-		fz_slider.fireStateChanged();
+		fz_combo_box.setSelectedIndex(0);
+
 
 		path_btn.addActionListener(e -> {
 			var file_dialog = new JFileChooser();
@@ -154,13 +207,13 @@ public class Main {
 					layout.show(frame.getContentPane(), "progress_pane");
 					Path plotter_bin_path = copy_plotter().toPath();
 					Util.plot(plotter_bin_path, dir.toPath(), false, new BigInteger(id), Math.abs(new Random().nextInt()), fz_slider.getValue(), progress_pane);
-					
+
 				} catch (IOException x) {
 					JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 					layout.show(frame.getContentPane(), "option_pane");
 					start_btn.setEnabled(true);
 					return;
-				} 
+				}
 			});
 		});
 	}

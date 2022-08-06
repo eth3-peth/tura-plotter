@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
 @SuppressWarnings("serial")
-public class PlotProgressPanel extends JPanel implements PlotProgressListener {
+public abstract class PlotProgressPanel extends JPanel implements PlotProgressListener {
 	private final JLabel hash_label_1 = new JLabel("1 MB/s");
 	private final JLabel hash_label_4 = new JLabel("1 min");
 	private final JProgressBar hash_progress_bar = new JProgressBar();
@@ -50,8 +50,19 @@ public class PlotProgressPanel extends JPanel implements PlotProgressListener {
 
 	}
 
+	public boolean isDone() {
+		return done;
+	}
+
+	public void setDone(boolean done) {
+		this.done = done;
+	}
+
 	@Override
 	public void onProgress(Type type, float progress, String rate, String ETA) {
+		if(done) {
+			return;
+		}
 		if (ETA.isBlank()) {
 			ETA = "0s";
 		}
@@ -67,7 +78,8 @@ public class PlotProgressPanel extends JPanel implements PlotProgressListener {
 			writ_label_4.setText(ETA);
 			if (progress >= 100 && !done) {
 				done = true;
-				Util.es.submit(() -> JOptionPane.showMessageDialog(getRootPane(), "Plot Finish!", "Done", JOptionPane.INFORMATION_MESSAGE));
+				JOptionPane.showMessageDialog(getRootPane(), "Plot Finish!", "Done", JOptionPane.INFORMATION_MESSAGE);
+				onDone();
 			}
 			break;
 		default:
@@ -75,5 +87,7 @@ public class PlotProgressPanel extends JPanel implements PlotProgressListener {
 
 		}
 	}
+	
+	public abstract void onDone();
 
 }
