@@ -96,6 +96,7 @@ public class Main {
 		option_pane.add(start_btn, new GridBagConstraints(0, 4, 3, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
 
 		layout.show(frame.getContentPane(), "option_pane");
+//		layout.show(frame.getContentPane(), "progress_pane");//TODO
 		var size = new Dimension(640, 480);
 		frame.setPreferredSize(size);
 		frame.setMinimumSize(size);
@@ -150,17 +151,16 @@ public class Main {
 
 				start_btn.setEnabled(false);
 				try {
+					layout.show(frame.getContentPane(), "progress_pane");
 					Path plotter_bin_path = copy_plotter().toPath();
 					Util.plot(plotter_bin_path, dir.toPath(), false, new BigInteger(id), Math.abs(new Random().nextInt()), fz_slider.getValue(), progress_pane);
 					
-					
 				} catch (IOException x) {
 					JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				} finally {
 					layout.show(frame.getContentPane(), "option_pane");
 					start_btn.setEnabled(true);
-				}
+					return;
+				} 
 			});
 		});
 	}
