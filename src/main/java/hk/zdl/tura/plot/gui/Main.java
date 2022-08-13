@@ -15,6 +15,8 @@ import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.Random;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -186,6 +188,8 @@ public class Main {
 			in_filename = "signum-plotter";
 		} else if (SystemInfo.isWindows) {
 			in_filename = "signum-plotter.exe";
+		} else if (SystemInfo.isMacOS) {
+			in_filename = "signum-plotter-x86_64-apple-darwin.zip";
 		}
 		InputStream in = Main.class.getClassLoader().getResourceAsStream("lib/" + in_filename);
 		FileOutputStream out = new FileOutputStream(tmp_file);
@@ -193,6 +197,19 @@ public class Main {
 		out.flush();
 		out.close();
 		in.close();
+		if (SystemInfo.isMacOS) {
+			ZipFile zipfile = new ZipFile(tmp_file);
+			ZipEntry entry = zipfile.stream().findAny().get();
+			in = zipfile.getInputStream(entry);
+			tmp_file = File.createTempFile("plotter-", ".app");
+			tmp_file.deleteOnExit();
+			out = new FileOutputStream(tmp_file);
+			IOUtils.copy(in, out);
+			out.flush();
+			out.close();
+			in.close();
+			zipfile.close();
+		}
 		tmp_file.setExecutable(true);
 		return tmp_file;
 	}
