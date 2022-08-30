@@ -55,7 +55,7 @@ public class Main {
 			Taskbar.getTaskbar().setIconImage(app_icon);
 		} catch (Exception x) {
 		}
-		var frame = new JFrame();
+		var frame = new JFrame("PETH plot");
 		frame.setIconImage(app_icon);
 		var layout = new CardLayout();
 		frame.setLayout(layout);
@@ -215,12 +215,14 @@ public class Main {
 	}
 
 	private enum quick_size {
-		MB_100, GB_1, GB_100, GB_500, GB_1000, GB_2000;
+		MB_100, GB_1, GB_10, GB_100, GB_500, GB_1000, GB_2000;
 
 		int size() {
 			switch (this) {
 			case GB_1:
 				return 4000;
+			case GB_10:
+				return 40000;
 			case GB_100:
 				return 400000;
 			case GB_1000:
@@ -242,6 +244,8 @@ public class Main {
 			switch (this) {
 			case GB_1:
 				return "1GB";
+			case GB_10:
+				return "10GB";
 			case GB_100:
 				return "100GB";
 			case GB_1000:
