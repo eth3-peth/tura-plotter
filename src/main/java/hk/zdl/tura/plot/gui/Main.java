@@ -100,6 +100,23 @@ public class Main {
 		var progress_pane = new PlotProgressPanel() {
 
 			@Override
+			public void onProgress(Type type, float progress, String rate, String ETA) {
+				super.onProgress(type, progress, rate, ETA);
+				if(type==Type.WRIT) {
+					try {
+						if(progress>=100) {
+							Taskbar.getTaskbar().setWindowProgressValue(frame, 0);
+							Taskbar.getTaskbar().setWindowProgressState(frame, Taskbar.State.OFF);
+						}else {
+							Taskbar.getTaskbar().setWindowProgressState(frame, Taskbar.State.NORMAL);
+							Taskbar.getTaskbar().setWindowProgressValue(frame, (int) progress);
+						}
+						} catch (Exception x) {
+					}
+				}
+			}
+
+			@Override
 			public void onDone() {
 				start_btn.setEnabled(true);
 				layout.show(frame.getContentPane(), "option_pane");
