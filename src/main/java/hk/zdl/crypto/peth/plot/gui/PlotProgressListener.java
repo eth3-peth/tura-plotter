@@ -1,4 +1,4 @@
-package hk.zdl.tura.plot.gui;
+package hk.zdl.crypto.peth.plot.gui;
 
 public interface PlotProgressListener {
 

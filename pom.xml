@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>hk.zdl.tura</groupId>
-	<artifactId>rotura-plot-gui</artifactId>
+	<artifactId>peth-plot-gui</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>rotura-plot-gui</name>
-	<description>rotura-plot-gui</description>
+	<name>peth-plot-gui</name>
+	<description>peth-plot-gui</description>
 
 	<build>
 		<plugins>
@@ -25,7 +25,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>hk.zdl.tura.plot.gui.Main</mainClass>
+							<mainClass>hk.zdl.crypto.peth.plot.gui.Main</mainClass>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 						<manifestEntries>
@@ -46,6 +46,18 @@
 		</plugins>
 	</build>
 	<repositories>
+		<repository>
+			<id>ali-maven</id>
+			<url>http://maven.aliyun.com/nexus/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</snapshots>
+		</repository>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
