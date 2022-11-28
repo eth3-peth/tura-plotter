@@ -50,7 +50,6 @@ public class Main {
 
 	private static final long byte_per_nounce = 262144;
 	private static boolean show_dialog_on_done = true;
-	private static PlotProgressPanel progress_pane;
 
 	@SuppressWarnings("serial")
 	public static void main(String[] args) throws Throwable {
@@ -105,7 +104,7 @@ public class Main {
 		option_pane.add(start_btn, new GridBagConstraints(0, 4, 3, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
 
 		layout.show(frame.getContentPane(), "option_pane");
-		progress_pane = new PlotProgressPanel() {
+		var progress_pane = new PlotProgressPanel() {
 
 			@Override
 			public void onProgress(Type type, float progress, String rate, String ETA) {
@@ -165,7 +164,7 @@ public class Main {
 			}
 		});
 		start_btn.addActionListener(e -> {
-			var id = id_field.getText().trim().replace("+", "");
+			var id = id_field.getText().trim().replace("+", "").replace("-", "");
 			try {
 				Long.parseUnsignedLong(id);
 			} catch (NumberFormatException x) {
@@ -189,10 +188,10 @@ public class Main {
 				start_btn.setEnabled(false);
 				try {
 					layout.show(frame.getContentPane(), "progress_pane");
-					do_plot(dir.toPath(), id, fz_slider.getValue());
+					do_plot(dir.toPath(), id, fz_slider.getValue(), progress_pane);
 				} catch (Exception x) {
 					JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				}finally {
+				} finally {
 					layout.show(frame.getContentPane(), "option_pane");
 					start_btn.setEnabled(true);
 				}
@@ -209,20 +208,41 @@ public class Main {
 			layout.show(frame.getContentPane(), "progress_pane");
 			frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 			show_dialog_on_done = false;
-			for (int i = 0; i < count; i++) {
-				do_plot(path, id, nounce);
+			int[] a = new int[1];
+			var listener = new PlotProgressListener() {
+
+				@Override
+				public void onProgress(Type type, float progress, String rate, String ETA) {
+					if (type == Type.WRIT) {
+						var jobj = new JSONObject();
+						jobj.put("index", a[0]);
+						jobj.put("progress", progress);
+						System.out.println(jobj);
+					}
+					progress_pane.onProgress(type, progress, rate, ETA);
+				}
+
+			};
+			try {
+				for (a[0] = 0; a[0] < count; a[0]++) {
+					do_plot(path, id, nounce, listener);
+				}
+			} catch (Exception x) {
+				x.printStackTrace(System.err);
+				JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			} finally {
+				layout.show(frame.getContentPane(), "option_pane");
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				show_dialog_on_done = true;
+				start_btn.setEnabled(true);
 			}
-			layout.show(frame.getContentPane(), "option_pane");
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			show_dialog_on_done = true;
-			start_btn.setEnabled(true);
 		}
 
 	}
 
-	private static void do_plot(Path dir, String id, long nounce) throws Exception {
+	private static void do_plot(Path dir, String id, long nounce, PlotProgressListener listener) throws Exception {
 		Path plotter_bin_path = copy_plotter().toPath();
-		Process proc = Util.plot(plotter_bin_path, dir, false, new BigInteger(id), Math.abs(new Random().nextInt()), nounce, progress_pane);
+		Process proc = Util.plot(plotter_bin_path, dir, false, new BigInteger(id), Math.abs(new Random().nextInt()), nounce, listener);
 		proc.waitFor();
 		Files.deleteIfExists(plotter_bin_path);
 	}
