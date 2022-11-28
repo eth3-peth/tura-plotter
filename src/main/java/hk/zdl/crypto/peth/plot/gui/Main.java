@@ -236,6 +236,9 @@ public class Main {
 				show_dialog_on_done = true;
 				start_btn.setEnabled(true);
 			}
+			if(jobj.optBoolean("exitOnDone")) {
+				System.exit(0);
+			}
 		}
 
 	}
