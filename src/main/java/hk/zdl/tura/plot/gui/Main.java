@@ -7,12 +7,16 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Taskbar;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Random;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -32,6 +36,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
@@ -43,6 +49,8 @@ import com.softsec.util.ChhUtil;
 public class Main {
 
 	private static final long byte_per_nounce = 262144;
+	private static boolean show_dialog_on_done = true;
+	private static PlotProgressPanel progress_pane;
 
 	@SuppressWarnings("serial")
 	public static void main(String[] args) throws Throwable {
@@ -97,29 +105,30 @@ public class Main {
 		option_pane.add(start_btn, new GridBagConstraints(0, 4, 3, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
 
 		layout.show(frame.getContentPane(), "option_pane");
-		var progress_pane = new PlotProgressPanel() {
+		progress_pane = new PlotProgressPanel() {
 
 			@Override
 			public void onProgress(Type type, float progress, String rate, String ETA) {
 				super.onProgress(type, progress, rate, ETA);
-				if(type==Type.WRIT) {
+				if (type == Type.WRIT) {
 					try {
-						if(progress>=100) {
+						if (progress >= 100) {
 							Taskbar.getTaskbar().setWindowProgressValue(frame, 0);
 							Taskbar.getTaskbar().setWindowProgressState(frame, Taskbar.State.OFF);
-						}else {
+						} else {
 							Taskbar.getTaskbar().setWindowProgressState(frame, Taskbar.State.NORMAL);
 							Taskbar.getTaskbar().setWindowProgressValue(frame, (int) progress);
 						}
-						} catch (Exception x) {
+					} catch (Exception x) {
 					}
 				}
 			}
 
 			@Override
 			public void onDone() {
-				start_btn.setEnabled(true);
-				layout.show(frame.getContentPane(), "option_pane");
+				if (show_dialog_on_done) {
+					JOptionPane.showMessageDialog(getRootPane(), "Plot Finish!", "Done", JOptionPane.INFORMATION_MESSAGE);
+				}
 				setDone(false);
 			}
 		};
@@ -180,17 +189,42 @@ public class Main {
 				start_btn.setEnabled(false);
 				try {
 					layout.show(frame.getContentPane(), "progress_pane");
-					Path plotter_bin_path = copy_plotter().toPath();
-					Util.plot(plotter_bin_path, dir.toPath(), false, new BigInteger(id), Math.abs(new Random().nextInt()), fz_slider.getValue(), progress_pane);
-
-				} catch (IOException x) {
+					do_plot(dir.toPath(), id, fz_slider.getValue());
+				} catch (Exception x) {
 					JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}finally {
 					layout.show(frame.getContentPane(), "option_pane");
 					start_btn.setEnabled(true);
-					return;
 				}
 			});
 		});
+		if (args.length > 0) {
+			byte[] bArr = Base64.getDecoder().decode(args[0]);
+			var jobj = new JSONObject(new JSONTokener(new ByteArrayInputStream(bArr)));
+			var id = jobj.getString("id");
+			var path = Paths.get(jobj.getString("path"));
+			var nounce = jobj.getLong("nounce");
+			var count = jobj.optInt("count", 1);
+
+			layout.show(frame.getContentPane(), "progress_pane");
+			frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+			show_dialog_on_done = false;
+			for (int i = 0; i < count; i++) {
+				do_plot(path, id, nounce);
+			}
+			layout.show(frame.getContentPane(), "option_pane");
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			show_dialog_on_done = true;
+			start_btn.setEnabled(true);
+		}
+
+	}
+
+	private static void do_plot(Path dir, String id, long nounce) throws Exception {
+		Path plotter_bin_path = copy_plotter().toPath();
+		Process proc = Util.plot(plotter_bin_path, dir, false, new BigInteger(id), Math.abs(new Random().nextInt()), nounce, progress_pane);
+		proc.waitFor();
+		Files.deleteIfExists(plotter_bin_path);
 	}
 
 	private static File copy_plotter() throws IOException {

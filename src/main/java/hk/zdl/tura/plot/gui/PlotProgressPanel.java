@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
@@ -81,7 +80,6 @@ public abstract class PlotProgressPanel extends JPanel implements PlotProgressLi
 			writ_label_4.setText(ETA);
 			if (progress >= 100 && !done) {
 				done = true;
-				JOptionPane.showMessageDialog(getRootPane(), "Plot Finish!", "Done", JOptionPane.INFORMATION_MESSAGE);
 				onDone();
 			}
 			break;
