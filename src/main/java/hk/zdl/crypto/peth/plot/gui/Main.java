@@ -30,8 +30,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -43,8 +44,8 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.util.SystemInfo;
+import com.jakewharton.byteunits.BinaryByteUnit;
 import com.jthemedetecor.OsThemeDetector;
-import com.softsec.util.ChhUtil;
 
 public class Main {
 
@@ -86,18 +87,11 @@ public class Main {
 		option_pane.add(path_btn, new GridBagConstraints(2, 1, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 		var fz_label = new JLabel("File Size");
 		option_pane.add(fz_label, new GridBagConstraints(0, 2, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-		var fz_slider = new JSlider(100, 10000000, 1000);
-		option_pane.add(fz_slider, new GridBagConstraints(1, 2, 1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+		var fz_spinner = new JSpinner(new SpinnerNumberModel(100, 1, 1024, 1));
+		option_pane.add(fz_spinner, new GridBagConstraints(1, 2, 1, 1, 0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 
-		var fz_combo_box = new JComboBox<>(quick_size.values());
-		fz_combo_box.addActionListener(e -> fz_slider.setValue(((quick_size) fz_combo_box.getSelectedItem()).size()));
-		option_pane.add(fz_combo_box, new GridBagConstraints(2, 2, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-
-		var fz_label_1 = new JLabel();
-		fz_label_1.setHorizontalAlignment(JLabel.RIGHT);
-		option_pane.add(fz_label_1, new GridBagConstraints(1, 3, 1, 1, 1, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-		var fz_label_2 = new JLabel("Bytes");
-		option_pane.add(fz_label_2, new GridBagConstraints(2, 3, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
+		var fz_op = new JComboBox<>(new String[] { "MB", "GB" });
+		option_pane.add(fz_op, new GridBagConstraints(2, 2, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 
 		var start_btn = new JButton("Start");
 		start_btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 100));
@@ -148,8 +142,6 @@ public class Main {
 			});
 		});
 
-		fz_slider.addChangeListener(e -> fz_label_1.setText(ChhUtil.strAddComma(fz_slider.getValue() * byte_per_nounce + "")));
-		fz_combo_box.setSelectedIndex(0);
 		progress_pane.setDone(false);
 
 		path_btn.addActionListener(e -> {
@@ -185,10 +177,18 @@ public class Main {
 
 			Util.es.submit(() -> {
 
+				long l = (Integer) fz_spinner.getValue();
+				if (fz_op.getSelectedItem().equals("MB")) {
+					l = BinaryByteUnit.MEBIBYTES.toBytes(l);
+				} else if (fz_op.getSelectedItem().equals("GB")) {
+					l = BinaryByteUnit.GIBIBYTES.toBytes(l);
+				}
+				l = l / byte_per_nounce;
+
 				start_btn.setEnabled(false);
 				try {
 					layout.show(frame.getContentPane(), "progress_pane");
-					do_plot(dir.toPath(), id, fz_slider.getValue(), progress_pane);
+					do_plot(dir.toPath(), id, l, progress_pane);
 				} catch (Exception x) {
 					JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				} finally {
@@ -286,54 +286,6 @@ public class Main {
 		}
 		tmp_file.setExecutable(true);
 		return tmp_file;
-	}
-
-	private enum quick_size {
-		MB_100, GB_1, GB_10, GB_100, GB_500, GB_1000, GB_2000;
-
-		int size() {
-			switch (this) {
-			case GB_1:
-				return 4000;
-			case GB_10:
-				return 40000;
-			case GB_100:
-				return 400000;
-			case GB_1000:
-				return 4000000;
-			case GB_2000:
-				return 8000000;
-			case GB_500:
-				return 2000000;
-			case MB_100:
-				return 400;
-			default:
-				break;
-
-			}
-			return 0;
-		}
-
-		public String toString() {
-			switch (this) {
-			case GB_1:
-				return "1GB";
-			case GB_10:
-				return "10GB";
-			case GB_100:
-				return "100GB";
-			case GB_1000:
-				return "1000GB";
-			case GB_2000:
-				return "2000GB";
-			case GB_500:
-				return "500GB";
-			case MB_100:
-				return "100MB";
-			default:
-				return "";
-			}
-		}
 	}
 
 }
