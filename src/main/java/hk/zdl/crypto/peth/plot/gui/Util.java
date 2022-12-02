@@ -55,7 +55,12 @@ public class Util {
 		BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 		String line = null;
 		while (true) {
-			line = reader.readLine().trim();
+			line = reader.readLine();
+			if (line == null) {
+				break;
+			} else {
+				line = line.trim();
+			}
 			if (line.isEmpty() || line.equals("[2A")) {
 				continue;
 			} else if (line.startsWith("Error: ")) {

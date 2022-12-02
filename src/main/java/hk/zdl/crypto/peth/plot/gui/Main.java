@@ -12,7 +12,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -199,7 +201,7 @@ public class Main {
 		});
 		if (args.length > 0) {
 			byte[] bArr = Base64.getDecoder().decode(args[0]);
-			var jobj = new JSONObject(new JSONTokener(new ByteArrayInputStream(bArr)));
+			var jobj = new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(bArr),Charset.forName("UTF-8"))));
 			var id = jobj.getString("id");
 			var path = Paths.get(jobj.getString("path"));
 			var nounce = jobj.getLong("nounce");
