@@ -175,6 +175,13 @@ public class Main {
 			} else if (!dir.canWrite()) {
 				JOptionPane.showMessageDialog(frame, "Path is not Writable!", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
+			} else {
+				for (char c : dir.getAbsolutePath().toCharArray()) {
+					if (c > 127) {
+						JOptionPane.showMessageDialog(frame, "Path should contain only ASCII characters!", "Error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+				}
 			}
 
 			Util.es.submit(() -> {
@@ -201,7 +208,7 @@ public class Main {
 		});
 		if (args.length > 0) {
 			byte[] bArr = Base64.getDecoder().decode(args[0]);
-			var jobj = new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(bArr),Charset.forName("UTF-8"))));
+			var jobj = new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(bArr), Charset.forName("UTF-8"))));
 			var id = jobj.getString("id");
 			var path = Paths.get(jobj.getString("path"));
 			var nounce = jobj.getLong("nounce");
@@ -238,7 +245,7 @@ public class Main {
 				show_dialog_on_done = true;
 				start_btn.setEnabled(true);
 			}
-			if(jobj.optBoolean("exitOnDone")) {
+			if (jobj.optBoolean("exitOnDone")) {
 				System.exit(0);
 			}
 		}
