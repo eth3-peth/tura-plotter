@@ -184,27 +184,31 @@ public class Main {
 				}
 			}
 
-			Util.es.submit(() -> {
+			new Thread() {
 
-				long l = (Integer) fz_spinner.getValue();
-				if (fz_op.getSelectedItem().equals("MB")) {
-					l = BinaryByteUnit.MEBIBYTES.toBytes(l);
-				} else if (fz_op.getSelectedItem().equals("GB")) {
-					l = BinaryByteUnit.GIBIBYTES.toBytes(l);
-				}
-				l = l / byte_per_nounce;
+				@Override
+				public void run() {
 
-				start_btn.setEnabled(false);
-				try {
-					layout.show(frame.getContentPane(), "progress_pane");
-					do_plot(dir.toPath(), id, l, progress_pane);
-				} catch (Exception x) {
-					JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				} finally {
-					layout.show(frame.getContentPane(), "option_pane");
-					start_btn.setEnabled(true);
+					long l = (Integer) fz_spinner.getValue();
+					if (fz_op.getSelectedItem().equals("MB")) {
+						l = BinaryByteUnit.MEBIBYTES.toBytes(l);
+					} else if (fz_op.getSelectedItem().equals("GB")) {
+						l = BinaryByteUnit.GIBIBYTES.toBytes(l);
+					}
+					l = l / byte_per_nounce;
+
+					start_btn.setEnabled(false);
+					try {
+						layout.show(frame.getContentPane(), "progress_pane");
+						do_plot(dir.toPath(), id, l, progress_pane);
+					} catch (Exception x) {
+						JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					} finally {
+						layout.show(frame.getContentPane(), "option_pane");
+						start_btn.setEnabled(true);
+					}
 				}
-			});
+			}.start();
 		});
 		if (args.length > 0) {
 			byte[] bArr = Base64.getDecoder().decode(args[0]);
@@ -254,7 +258,7 @@ public class Main {
 
 	private static void do_plot(Path dir, String id, long nounce, PlotProgressListener listener) throws Exception {
 		Path plotter_bin_path = copy_plotter().toPath();
-		Process proc = Util.plot(plotter_bin_path, dir, false, new BigInteger(id), Math.abs(new Random().nextInt()), nounce, listener);
+		Process proc = PlotUtil.plot(plotter_bin_path, dir, false, new BigInteger(id), Math.abs(new Random().nextInt()), nounce, listener);
 		proc.waitFor();
 		Files.deleteIfExists(plotter_bin_path);
 	}
