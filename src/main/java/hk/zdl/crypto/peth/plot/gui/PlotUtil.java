@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
@@ -32,7 +31,7 @@ public class PlotUtil {
 		} else if (!target.toFile().isDirectory()) {
 			throw new IOException("not dir: " + target.toString());
 		}
-		List<String> l = new LinkedList<>();
+		var l = new LinkedList<String>();
 		l.add(plot_bin.toAbsolutePath().toString());
 		if (benchmark) {
 			l.add("-b");
