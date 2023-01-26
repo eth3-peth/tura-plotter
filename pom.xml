@@ -2,9 +2,33 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>hk.zdl.tura</groupId>
 	<artifactId>peth-plot-gui</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<name>peth-plot-gui</name>
 	<description>peth-plot-gui</description>
+	<inceptionYear>2022</inceptionYear>
+	<url>${project.scm.url}</url>
+
+	<scm>
+		<url>https://github.com/eth3-peth/peth-plotter</url>
+		<connection>https://github.com/eth3-peth/peth-plotter.git</connection>
+	</scm>
+
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/eth3-peth/peth-plotter/issues</url>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>GNU General Public License v3.0</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
 
 	<build>
 		<plugins>
@@ -18,28 +42,32 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<appendAssemblyId>true</appendAssemblyId>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<archive>
-						<manifest>
-							<mainClass>hk.zdl.crypto.peth.plot.gui.Main</mainClass>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-						<manifestEntries>
-							<SplashScreen-Image>splash.png</SplashScreen-Image>
-						</manifestEntries>
-					</archive>
-				</configuration>
+				<version>3.4.2</version>
 				<executions>
 					<execution>
 						<id>make-assembly</id>
 						<phase>package</phase>
 						<goals>
-							<goal>assembly</goal>
+							<goal>single</goal>
 						</goals>
+						<configuration>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<descriptors>
+								<descriptor>src/assemble/assembly.xml</descriptor>
+							</descriptors>
+							<archive>
+								<manifest>
+									<mainClass>hk.zdl.crypto.peth.plot.gui.Main</mainClass>
+									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+								</manifest>
+								<manifestEntries>
+									<SplashScreen-Image>splash.png</SplashScreen-Image>
+								</manifestEntries>
+							</archive>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
