@@ -12,8 +12,10 @@ import java.util.LinkedList;
 
 import org.apache.commons.io.IOUtils;
 
+import com.formdev.flatlaf.util.SystemInfo;
+
 public class PlotUtil {
-	public static final Process plot(Path plot_bin, Path target, boolean benchmark, BigInteger id, long start_nonce, long nonces, PlotProgressListener listener) throws IOException {
+	public static final Process plot(Path plot_bin, Path target, boolean benchmark, BigInteger id, long start_nonce, long nonces, PlotProgressListener listener) throws Exception {
 		if (!Files.exists(plot_bin.toAbsolutePath())) {
 			plot_bin = findPath(plot_bin);
 		}
@@ -32,7 +34,18 @@ public class PlotUtil {
 			throw new IOException("not dir: " + target.toString());
 		}
 		var l = new LinkedList<String>();
-		l.add(plot_bin.toAbsolutePath().toString());
+		if (SystemInfo.isAARCH64) {
+			var proc = new ProcessBuilder("docker", "run", "--privileged", "--rm", "tonistiigi/binfmt", "--install", "linux/amd64").start();
+			int i = proc.waitFor();
+			if (i != 0) {
+				var err_info = IOUtils.readLines(proc.getErrorStream(),Charset.defaultCharset()).stream().reduce("",(a,b)->a+"\n"+b).trim();
+				throw new IOException(err_info);
+			}
+			l.addAll(Arrays.asList("docker", "run", "--platform", "linux/amd64", "--mount", "type=bind,source=" + plot_bin.toAbsolutePath().toString() + ",target=/app/signum-plotter",
+					"--mount", "type=bind,source=" + target.toAbsolutePath().toString() + ",target=" + target.toAbsolutePath().toString(), "ubuntu", "/app/signum-plotter"));
+		} else {
+			l.add(plot_bin.toAbsolutePath().toString());
+		}
 		if (benchmark) {
 			l.add("-b");
 		}
