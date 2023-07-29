@@ -65,7 +65,7 @@ public class Main {
 			Taskbar.getTaskbar().setIconImage(app_icon);
 		} catch (Exception x) {
 		}
-		var frame = new JFrame("PETH plot");
+		var frame = new JFrame("Tura plot");
 		frame.setIconImage(app_icon);
 		var layout = new CardLayout();
 		frame.setLayout(layout);
