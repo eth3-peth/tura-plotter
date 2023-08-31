@@ -256,7 +256,7 @@ public class Main {
 
 	}
 
-	private static void do_plot(Path dir, String id, long nounce, PlotProgressListener listener) throws Exception {
+	public static void do_plot(Path dir, String id, long nounce, PlotProgressListener listener) throws Exception {
 		Path plotter_bin_path = copy_plotter().toPath();
 		Process proc = PlotUtil.plot(plotter_bin_path, dir, false, new BigInteger(id), Math.abs(new Random().nextInt()), nounce, listener);
 		int i = proc.waitFor();

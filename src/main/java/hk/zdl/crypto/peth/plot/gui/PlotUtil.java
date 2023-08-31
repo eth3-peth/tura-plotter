@@ -34,7 +34,7 @@ public class PlotUtil {
 			throw new IOException("not dir: " + target.toString());
 		}
 		var l = new LinkedList<String>();
-		if (SystemInfo.isAARCH64) {
+		if (SystemInfo.isAARCH64 && !SystemInfo.isMacOS) {
 			var proc = new ProcessBuilder("docker", "run", "--privileged", "--rm", "tonistiigi/binfmt", "--install", "linux/amd64").start();
 			int i = proc.waitFor();
 			if (i != 0) {
