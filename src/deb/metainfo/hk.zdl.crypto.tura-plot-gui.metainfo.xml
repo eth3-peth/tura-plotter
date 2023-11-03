@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>hk.zdl.crypto.tura-plot-gui</id>
+	<project_license>GPL-3.0+</project_license>
+	<name>tura-plot-gui</name>
+	<launchable type="desktop-id">hk.zdl.crypto.tura-plot-gui.desktop</launchable>
+	<url type="homepage">https://github.com/TuraBlockchain/tura-plotter</url>
+</component>
