@@ -11,6 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+import hk.zdl.crypto.pearlet.plot.PlotProgressListener;
+
 @SuppressWarnings("serial")
 public abstract class PlotProgressPanel extends JPanel implements PlotProgressListener {
 	private final JLabel hash_label_1 = new JLabel();

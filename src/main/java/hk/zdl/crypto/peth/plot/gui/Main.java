@@ -9,20 +9,11 @@ import java.awt.Insets;
 import java.awt.Taskbar;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
-import java.util.Random;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -38,16 +29,17 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.util.SystemInfo;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import com.jthemedetecor.OsThemeDetector;
+
+import hk.zdl.crypto.pearlet.plot.PlotProgressListener;
+import hk.zdl.crypto.pearlet.plot.PlotUtil;
 
 public class Main {
 
@@ -110,6 +102,7 @@ public class Main {
 						if (progress >= 100) {
 							Taskbar.getTaskbar().setWindowProgressValue(frame, 0);
 							Taskbar.getTaskbar().setWindowProgressState(frame, Taskbar.State.OFF);
+							java.awt.Toolkit.getDefaultToolkit().beep();
 						} else {
 							Taskbar.getTaskbar().setWindowProgressState(frame, Taskbar.State.NORMAL);
 							Taskbar.getTaskbar().setWindowProgressValue(frame, (int) progress);
@@ -200,7 +193,7 @@ public class Main {
 					start_btn.setEnabled(false);
 					try {
 						layout.show(frame.getContentPane(), "progress_pane");
-						do_plot(dir.toPath(), id, l, progress_pane);
+						PlotUtil.do_plot(dir.toPath(), id, l, progress_pane);
 					} catch (Exception x) {
 						JOptionPane.showMessageDialog(frame, x.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 					} finally {
@@ -238,7 +231,7 @@ public class Main {
 			};
 			try {
 				for (a[0] = 0; a[0] < count; a[0]++) {
-					do_plot(path, id, nounce, listener);
+					PlotUtil.do_plot(path, id, nounce, listener);
 				}
 			} catch (Exception x) {
 				x.printStackTrace(System.err);
@@ -254,55 +247,6 @@ public class Main {
 			}
 		}
 
-	}
-
-	public static void do_plot(Path dir, String id, long nounce, PlotProgressListener listener) throws Exception {
-		Path plotter_bin_path = copy_plotter().toPath();
-		Process proc = PlotUtil.plot(plotter_bin_path, dir, false, new BigInteger(id), Math.abs(new Random().nextInt()), nounce, listener);
-		int i = proc.waitFor();
-		if (i != 0) {
-			var err_info = IOUtils.readLines(proc.getErrorStream(),Charset.defaultCharset()).stream().reduce("",(a,b)->a+"\n"+b).trim();
-			throw new IOException(err_info);
-		}
-		Files.deleteIfExists(plotter_bin_path);
-	}
-
-	private static File copy_plotter() throws IOException {
-		String suffix = "";
-		if (SystemInfo.isWindows) {
-			suffix = ".exe";
-		}
-		File tmp_file = File.createTempFile("plotter-", suffix);
-		tmp_file.deleteOnExit();
-		String in_filename = "";
-		if (SystemInfo.isLinux) {
-			in_filename = "signum-plotter";
-		} else if (SystemInfo.isWindows) {
-			in_filename = "signum-plotter.exe";
-		} else if (SystemInfo.isMacOS) {
-			in_filename = "signum-plotter-x86_64-apple-darwin.zip";
-		}
-		InputStream in = Main.class.getClassLoader().getResourceAsStream("lib/" + in_filename);
-		FileOutputStream out = new FileOutputStream(tmp_file);
-		IOUtils.copy(in, out);
-		out.flush();
-		out.close();
-		in.close();
-		if (SystemInfo.isMacOS) {
-			ZipFile zipfile = new ZipFile(tmp_file);
-			ZipEntry entry = zipfile.stream().findAny().get();
-			in = zipfile.getInputStream(entry);
-			tmp_file = File.createTempFile("plotter-", ".app");
-			tmp_file.deleteOnExit();
-			out = new FileOutputStream(tmp_file);
-			IOUtils.copy(in, out);
-			out.flush();
-			out.close();
-			in.close();
-			zipfile.close();
-		}
-		tmp_file.setExecutable(true);
-		return tmp_file;
 	}
 
 }
